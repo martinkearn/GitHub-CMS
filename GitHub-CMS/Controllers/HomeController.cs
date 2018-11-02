@@ -4,15 +4,26 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using GitHub_CMS.Models;
+using GitHubCMS.Models;
+using GitHubCMS.Services;
 
-namespace GitHub_CMS.Controllers
+namespace GitHubCMS.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+
+        private IGitHubService _gitHubService { get; set; }
+
+        public HomeController(IGitHubService gitHubService)
         {
-            return View();
+            _gitHubService = gitHubService;
+        }
+
+
+        public async Task<IActionResult> Index()
+        {
+            var files = await _gitHubService.GetFiles();
+            return View(files);
         }
 
         public IActionResult About()

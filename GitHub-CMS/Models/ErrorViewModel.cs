@@ -1,6 +1,6 @@
 using System;
 
-namespace GitHub_CMS.Models
+namespace GitHubCMS.Models
 {
     public class ErrorViewModel
     {
