@@ -11,6 +11,8 @@ namespace GitHubCMS.Services
     public interface IGitHubService
     {
         Task<List<GHFile>> GetFiles();
+
+        Task<string> GetFileContents(string downloadUrl);
     }
 
     public class GitHubService : IGitHubService
@@ -35,10 +37,45 @@ namespace GitHubCMS.Services
 
                 //convert response to files
                 var responseString = await response.Content.ReadAsStringAsync();
-                var files = JsonConvert.DeserializeObject<IEnumerable<GHFile>>(responseString);
+                var fileHeaders = JsonConvert.DeserializeObject<IEnumerable<GHFile>>(responseString);
+
+                //get file
+                var files = new List<GHFile>();
+                foreach (var fileHeader in fileHeaders)
+                {
+                    if (!string.IsNullOrEmpty(fileHeader.download_url))
+                    {
+                        var fileContents = await GetFileContents(fileHeader.download_url);
+                        fileHeader.content = fileContents;
+                        files.Add(fileHeader);
+                    }
+                }
 
                 //return
                 return files.ToList();
+            }
+        }
+
+        public async Task<string> GetFileContents(string downloadUrl)
+        {
+            using (var client = new HttpClient())
+            {
+                //setup HttpClient
+                var fullApiUrl = $"{downloadUrl}";
+                client.BaseAddress = new Uri(fullApiUrl);
+                client.DefaultRequestHeaders.Add("User-Agent", "GitHub-CMS");
+
+                //setup httpContent object
+                var response = await client.GetAsync(fullApiUrl);
+
+                //return null if not sucessfull
+                if (!response.IsSuccessStatusCode)
+                {
+                    return null;
+                }
+
+                //return
+                return await response.Content.ReadAsStringAsync();
             }
         }
     }

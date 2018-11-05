@@ -7,7 +7,7 @@
     <div class="col-md-12">
        @foreach (var file in Model)
        {
-           <p>@file.name</p>
+           <p><b>@file.name</b> @file.content.Substring(0, 40)</p>
        }
     </div>
 </div>
